@@ -44,7 +44,7 @@ GROUP BY YEAR(OrderDate), MONTH(OrderDate);
 SELECT
   YEAR(soh.OrderDate) AS År,                --- OrderDate format datetime ---
   MONTH(soh.OrderDate) AS Månad,
-  SUM(soh.SubTotal) AS Försäljning  --- änvänd SubTotal då den inte innehåller skatt eller frakt ---
+  SUM(soh.SubTotal) AS Försäljning          --- änvänd SubTotal då den inte innehåller skatt eller frakt ---
 FROM Sales.SalesOrderHeader AS soh
 GROUP BY YEAR(soh.OrderDate), MONTH(soh.OrderDate)
 ORDER BY År, Månad ASC;
@@ -115,3 +115,39 @@ JOIN Production.ProductCategory pc
 WHERE pc.Name = 'Components'
   AND soh.OrderDate >= '2025-05-01'
   AND soh.OrderDate <  '2025-06-01';
+
+--- Titta närmare på Bikes och components
+
+SELECT
+  YEAR(soh.OrderDate) AS År,
+  MONTH(soh.OrderDate) AS Månad,
+  SUM(sod.LineTotal) AS Cykelförsäljning
+FROM Sales.SalesOrderHeader soh
+JOIN Sales.SalesOrderDetail sod
+  ON soh.SalesOrderID = sod.SalesOrderID
+JOIN Production.Product p
+  ON sod.ProductID = p.ProductID
+JOIN Production.ProductSubcategory psc
+  ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+JOIN Production.ProductCategory pc
+  ON psc.ProductCategoryID = pc.ProductCategoryID
+WHERE pc.Name = 'Bikes'
+GROUP BY YEAR(soh.OrderDate), MONTH(soh.OrderDate)
+ORDER BY År, Månad;
+
+SELECT
+  YEAR(soh.OrderDate) AS År,
+  MONTH(soh.OrderDate) AS Månad,
+  SUM(sod.LineTotal) AS Komponentförsäljning
+FROM Sales.SalesOrderHeader soh
+JOIN Sales.SalesOrderDetail sod
+  ON soh.SalesOrderID = sod.SalesOrderID
+JOIN Production.Product p
+  ON sod.ProductID = p.ProductID
+JOIN Production.ProductSubcategory psc
+  ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+JOIN Production.ProductCategory pc
+  ON psc.ProductCategoryID = pc.ProductCategoryID
+WHERE pc.Name = 'Components'
+GROUP BY YEAR(soh.OrderDate), MONTH(soh.OrderDate)
+ORDER BY År, Månad;
