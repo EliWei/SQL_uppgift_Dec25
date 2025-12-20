@@ -16,3 +16,16 @@ SELECT
 FROM Sales.SalesOrderHeader AS soh
 GROUP BY YEAR(soh.OrderDate)
 ORDER BY År ASC;
+
+SELECT DISTINCT
+    År,
+    PERCENTILE_CONT(0.5) 
+        WITHIN GROUP (ORDER BY SubTotal) 
+        OVER (PARTITION BY År) AS MedianOrdervärde
+FROM (
+    SELECT
+        YEAR(OrderDate) AS År,
+        SubTotal
+    FROM Sales.SalesOrderHeader
+) t
+ORDER BY År;
