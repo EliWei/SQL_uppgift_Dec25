@@ -21,7 +21,7 @@ SELECT DISTINCT
     År,
     PERCENTILE_CONT(0.5) 
         WITHIN GROUP (ORDER BY SubTotal) 
-        OVER (PARTITION BY År) AS MedianOrdervärde
+        OVER (PARTITION BY År) AS Median_Ordervärde
 FROM (
     SELECT
         YEAR(OrderDate) AS År,

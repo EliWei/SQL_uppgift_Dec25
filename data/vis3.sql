@@ -13,7 +13,9 @@ WHERE TABLE_SCHEMA = 'Sales'
 SELECT
   MIN(OrderDate) AS FörstaDatum,
   MAX(OrderDate) AS SistaDatum,
-  COUNT(DISTINCT YEAR(OrderDate)) AS AntalÅr --- lägg in Emils kod här ---
+  COUNT(DISTINCT YEAR(OrderDate)) AS AntalÅr 
+  
+  --- lägg in Emils kod här ---
 
 --- Visar att maj 2022 inte är en hel månad
 SELECT
