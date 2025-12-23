@@ -65,5 +65,4 @@ GROUP BY
                             --- med i både GROUP BY och SELECT. (Eller gör en subquery)
         WHEN c.StoreID IS NOT NULL THEN 'Store'
         ELSE 'Private'
-    END
-ORDER BY Medel_ordervärde DESC;
+    END;
