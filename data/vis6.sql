@@ -66,3 +66,38 @@ GROUP BY
 ORDER BY Försäljning DESC;
 
 
+--- median sql calculation
+--- https://learn.microsoft.com/en-us/sql/t-sql/functions/percentile-cont-transact-sql?view=sql-server-ver17
+SELECT
+    st.Name AS Region,
+    PERCENTILE_CONT(0.5) 
+        WITHIN GROUP (ORDER BY soh.SubTotal) 
+        OVER (PARTITION BY st.Name) AS Median_Ordervärde
+FROM Sales.SalesTerritory st
+JOIN Sales.Customer c
+    ON st.TerritoryID = c.TerritoryID
+JOIN Sales.SalesOrderHeader soh
+    ON c.CustomerID = soh.CustomerID
+GROUP BY
+    st.Name,
+    soh.SubTotal
+ORDER BY
+    Region;
+
+SELECT DISTINCT
+    Region,
+    Median_Ordervärde
+FROM (                      --- använd kodstruktur från squidgame
+    SELECT
+        st.Name AS Region,
+        PERCENTILE_CONT(0.5) 
+            WITHIN GROUP (ORDER BY soh.SubTotal) 
+            OVER (PARTITION BY st.Name) AS Median_Ordervärde
+    FROM Sales.SalesTerritory st
+    JOIN Sales.Customer c
+        ON st.TerritoryID = c.TerritoryID
+    JOIN Sales.SalesOrderHeader soh
+        ON c.CustomerID = soh.CustomerID
+) t
+ORDER BY Median_Ordervärde DESC;
+
