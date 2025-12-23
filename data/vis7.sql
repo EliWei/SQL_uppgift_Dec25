@@ -42,7 +42,7 @@ FROM (
     WHERE st.Name = 'France'
 ) f;
 
-
+--- medelvärde per kundgrupp
 SELECT 
     st.Name AS Region, 
     SUM(soh.SubTotal) AS Försäljning,
