@@ -105,7 +105,7 @@ ORDER BY Vinstmarginal DESC;
 
 ---- skilland mellan tillverkade produkter och återförsäljningsprodukter?
 
-
+--- kombinera intäkt, vinst och vinstmarginal
 SELECT
     TOP 10
     sod.ProductID,
@@ -136,3 +136,69 @@ GROUP BY
     sod.ProductID, 
     p.Name, 
     pc.Name;
+
+SELECT
+    COUNT(DISTINCT sod.ProductID) AS Antal_unika_produkter
+FROM Sales.SalesOrderHeader soh
+JOIN Sales.SalesOrderDetail sod
+    ON soh.SalesOrderID = sod.SalesOrderID
+WHERE soh.OrderDate >= '2024-05-01'
+  AND soh.OrderDate <  '2025-05-01';
+
+SELECT
+    sod.ProductID,
+    p.Name AS Produktnamn,
+    pc.Name AS Produktkategori,
+    SUM(sod.LineTotal) AS Intäkt,               --- Försäljning, använder LineTotal som tidigare
+    SUM(sod.OrderQty * pch.StandardCost) AS Kostnad,
+    SUM(sod.LineTotal) - SUM(sod.OrderQty * pch.StandardCost) AS Vinst, --- försäljning minus kostnad
+    (SUM(sod.LineTotal) - SUM(sod.OrderQty * pch.StandardCost))  
+      / NULLIF(SUM(sod.LineTotal), 0) AS Vinstmarginal                  --- vinstmarginal
+FROM Sales.SalesOrderHeader soh
+    JOIN Sales.SalesOrderDetail sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+JOIN Production.Product p
+    ON sod.ProductID = p.ProductID
+JOIN Production.ProductSubcategory psc
+    ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+JOIN Production.ProductCategory pc
+    ON psc.ProductCategoryID = pc.ProductCategoryID
+JOIN Production.ProductCostHistory pch
+    ON pch.ProductID = sod.ProductID
+   AND pch.StartDate <= soh.OrderDate
+   AND (pch.EndDate IS NULL OR pch.EndDate > soh.OrderDate)
+WHERE soh.OrderDate >= '2024-05-01'
+  AND soh.OrderDate <  '2025-05-01'
+  AND pch.StandardCost > 0
+GROUP BY
+    sod.ProductID, 
+    p.Name, 
+    pc.Name;
+
+--- se närmare på vinst per produktkategori maj 2024 - april 2025
+SELECT
+    pc.Name AS Produktkategori,
+    SUM(sod.LineTotal) AS Intäkt,
+    SUM(sod.OrderQty * pch.StandardCost) AS Kostnad,
+    SUM(sod.LineTotal) - SUM(sod.OrderQty * pch.StandardCost) AS Vinst
+    (SUM(sod.LineTotal) - SUM(sod.OrderQty * pch.StandardCost))  
+      / NULLIF(SUM(sod.LineTotal), 0) AS Vinstmarginal 
+FROM Sales.SalesOrderHeader soh
+JOIN Sales.SalesOrderDetail sod
+    ON soh.SalesOrderID = sod.SalesOrderID
+JOIN Production.Product p
+    ON sod.ProductID = p.ProductID
+JOIN Production.ProductSubcategory psc
+    ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+JOIN Production.ProductCategory pc
+    ON psc.ProductCategoryID = pc.ProductCategoryID
+JOIN Production.ProductCostHistory pch
+    ON pch.ProductID = sod.ProductID
+    AND pch.StartDate <= soh.OrderDate
+    AND (pch.EndDate IS NULL OR pch.EndDate > soh.OrderDate)
+WHERE soh.OrderDate >= '2024-05-01'
+    AND soh.OrderDate <  '2025-05-01'
+    AND pch.StandardCost > 0
+GROUP BY pc.Name
+ORDER BY Vinst DESC;
+
