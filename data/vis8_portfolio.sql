@@ -180,7 +180,7 @@ SELECT
     pc.Name AS Produktkategori,
     SUM(sod.LineTotal) AS Intäkt,
     SUM(sod.OrderQty * pch.StandardCost) AS Kostnad,
-    SUM(sod.LineTotal) - SUM(sod.OrderQty * pch.StandardCost) AS Vinst
+    SUM(sod.LineTotal) - SUM(sod.OrderQty * pch.StandardCost) AS Vinst,
     (SUM(sod.LineTotal) - SUM(sod.OrderQty * pch.StandardCost))  
       / NULLIF(SUM(sod.LineTotal), 0) AS Vinstmarginal 
 FROM Sales.SalesOrderHeader soh
@@ -202,3 +202,54 @@ WHERE soh.OrderDate >= '2024-05-01'
 GROUP BY pc.Name
 ORDER BY Vinst DESC;
 
+
+--- titta på hög försäljning vs låg intäkt
+SELECT TOP 10
+    p.ProductID,
+    p.Name AS Produkt,
+    pc.Name AS Produktkategori,
+    SUM(sod.OrderQty) AS Total_Kvantitet,
+    SUM(sod.LineTotal) AS Total_Intäkt
+FROM Sales.SalesOrderHeader soh
+JOIN Sales.SalesOrderDetail sod
+    ON soh.SalesOrderID = sod.SalesOrderID
+JOIN Production.Product p
+    ON sod.ProductID = p.ProductID
+JOIN Production.ProductSubcategory psc
+    ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+JOIN Production.ProductCategory pc
+    ON psc.ProductCategoryID = pc.ProductCategoryID
+WHERE soh.OrderDate >= '2024-05-01'
+  AND soh.OrderDate <  '2025-05-01'
+GROUP BY
+    p.ProductID,
+    p.Name,
+    pc.Name;
+
+SELECT TOP 10
+    p.ProductID,
+    p.Name AS Produkt,
+    SUM(sod.OrderQty) AS Kvantitet,
+    SUM(sod.LineTotal) AS Intäkt
+FROM Sales.SalesOrderDetail sod
+JOIN Production.Product p
+    ON sod.ProductID = p.ProductID
+GROUP BY
+    p.ProductID,
+    p.Name
+ORDER BY
+    Kvantitet DESC;
+
+SELECT
+    p.ProductID,
+    p.Name AS Produkt,
+    SUM(sod.OrderQty) AS Kvantitet,
+    SUM(sod.LineTotal) AS Intäkt
+FROM Sales.SalesOrderDetail sod
+JOIN Production.Product p
+    ON sod.ProductID = p.ProductID
+GROUP BY
+    p.ProductID,
+    p.Name
+ORDER BY
+    Kvantitet DESC;
